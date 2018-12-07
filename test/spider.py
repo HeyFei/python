@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+
 from urllib import request, error
 from urllib import parse
 import urllib.request
@@ -15,9 +15,9 @@ def getHtml():
     url = 'http://srh.bankofchina.com/search/whpj/search.jsp'
     try:
         params = {
-        'erectDate': '',
-        'nothing': '',
-        'pjname': '1316',
+            'erectDate': '',
+            'nothing': '',
+            'pjname': '1316',
         }
         post_args = parse.urlencode(params).encode('utf-8')
         html = request.urlopen(url, post_args).read()
@@ -38,7 +38,7 @@ def parseHtml(html, depth):
     table = div.find('table')
     tr = table.find_all('tr')
     if(1 == depth):
-    # latest_data = str(tr[1])
+        # latest_data = str(tr[1])
         return str(tr[1])
     else:
         return str
@@ -46,10 +46,10 @@ def parseHtml(html, depth):
 
 def isCached(latest_data):
     is_exist_cache = redis_cache.get(CACHE_STR_KEY)
-    if(is_exist_cache == latest_data): # 缓存数据与最新数据相同
-    # print('true')
+    if(is_exist_cache == latest_data):  # 缓存数据与最新数据相同
+        # print('true')
         return True
-    else: # 缓存数据与最新数据不同
+    else:  # 缓存数据与最新数据不同
         # print('false')
         redis_cache.set(CACHE_STR_KEY, latest_data)
         redis_cache.delete(CACHE_LIST_KEY)
@@ -61,13 +61,13 @@ def writeCache(html):
         if 0 == index:
             continue
         td_content = item.find_all('td')
-        coin_name = td_content[0].get_text() # 货币名称
-        rate_buy = td_content[1].get_text() # 现汇买入价
-        cash_buy = td_content[2].get_text() # 现钞买入价
-        rate_sell = td_content[3].get_text() # 现汇卖出价
-        cash_sell = td_content[4].get_text() # 现钞卖出价
-        boc_convert = td_content[5].get_text() # 中行折算价
-        create_time = td_content[6].get_text() # 发布时间
+        coin_name = td_content[0].get_text()  # 货币名称
+        rate_buy = td_content[1].get_text()  # 现汇买入价
+        cash_buy = td_content[2].get_text()  # 现钞买入价
+        rate_sell = td_content[3].get_text()  # 现汇卖出价
+        cash_sell = td_content[4].get_text()  # 现钞卖出价
+        boc_convert = td_content[5].get_text()  # 中行折算价
+        create_time = td_content[6].get_text()  # 发布时间
 
         cache = json.dumps({
             'coin_name': coin_name,
@@ -77,7 +77,7 @@ def writeCache(html):
             'cash_sell': cash_sell,
             'boc_convert': boc_convert,
             'create_time': create_time
-            })
+        })
 
         redis_cache.lpush(CACHE_LIST_KEY, cache)
     return True
@@ -113,16 +113,16 @@ latest_data_dist = {
     'cash_sell': latest_td[4].get_text(),
     'boc_convert': latest_td[5].get_text(),
     'create_time': latest_td[6].get_text()
-    }
+}
 latest_convert = latest_td[5].get_text()
 
-#获取缓存中的数据
+# 获取缓存中的数据
 cached_data = redis_cache.get(CACHE_STR_KEY)
 if cached_data != None:
     cached_data = json.loads(redis_cache.get(CACHE_STR_KEY))
     cached_convert = cached_data['boc_convert']
-    #print(type(cached_convert),cached_convert,"\n")
-    #print(type(latest_convert),latest_convert,"\n")
+    # print(type(cached_convert),cached_convert,"\n")
+    # print(type(latest_convert),latest_convert,"\n")
     if(arithmeticalMean(cached_convert, latest_convert)):
         print('数据异常')
         os._exit(0)
