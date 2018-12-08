@@ -1,11 +1,10 @@
 from bs4 import BeautifulSoup
-from urllib import request, error
+from urllib import request
 from urllib import parse
 import urllib.request
 import logging
 import redis
 import json
-import os
 import sys
 import codecs
 
