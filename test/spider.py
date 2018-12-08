@@ -23,8 +23,11 @@ redis_cache = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 class Spier:
 
+    def __init__(self, url):
+        self.url = url
+
     def getHtml(self):
-        url = 'http://srh.bankofchina.com/search/whpj/search.jsp'
+        print('req_open_html begin')
         try:
             params = {
                 'erectDate': '',
@@ -32,8 +35,7 @@ class Spier:
                 'pjname': '1316',
             }
             post_args = parse.urlencode(params).encode('utf-8')
-            html = request.urlopen(url, post_args).read()
-            return html
+            html = request.urlopen(self.url, post_args).read()
         except urllib.error.HTTPError as e:
             return e.code
         except urllib.error.URLError as e:
@@ -43,6 +45,8 @@ class Spier:
                 return e.reason
             else:
                 return 'OK'
+        else:
+            return html
 
     def isCached(latest_data):
         is_exist_cache = redis_cache.get(CACHE_STR_KEY)
@@ -57,9 +61,8 @@ class Spier:
 
     def writeCache(self, html):
         redis_cache.delete(CACHE_LIST_KEY)
+        html = html[1:-1]
         for index, item in enumerate(html):
-            if 0 == index:
-                continue
             td_content = item.find_all('td')
             coin_name = td_content[0].get_text()  # 货币名称
             rate_buy = td_content[1].get_text()  # 现汇买入价
@@ -92,45 +95,47 @@ class Spier:
             return True
 
 
-spider = Spier()
-html = spider.getHtml()
+if __name__ == '__main__':
+    url = 'http://srh.bankofchina.com/search/whpj/search.jsp'
+    spider = Spier(url)
+    html = spider.getHtml()
+    print('parse html begin')
+    if isinstance(html, int) or 'OK' == html:
+        logging.debug(html)
+        exit(-1)
 
-if isinstance(html, int) or 'OK' == html:
-    logging.debug(html)
-    os._exit(0)
+    soup = BeautifulSoup(html, 'html.parser')
+    div = soup.find('div', attrs={'class': 'BOC_main publish'})
+    table = div.find('table')
+    tr = table.find_all('tr')
+    latest_data_str = str(tr[1])
 
-soup = BeautifulSoup(html, 'html.parser')
-div = soup.find('div', attrs={'class': 'BOC_main publish'})
-table = div.find('table')
-tr = table.find_all('tr')
-latest_data_str = str(tr[1])
+    latest_data = tr[1]
+    latest_td = latest_data.find_all('td')
+    latest_data_dist = {
+        'coin_name': latest_td[0].get_text(),
+        'rate_buy': latest_td[1].get_text(),
+        'cash_buy': latest_td[2].get_text(),
+        'rate_sell': latest_td[3].get_text(),
+        'cash_sell': latest_td[4].get_text(),
+        'boc_convert': latest_td[5].get_text(),
+        'create_time': latest_td[6].get_text()
+    }
+    latest_convert = latest_td[5].get_text()
 
-latest_data = tr[1]
-latest_td = latest_data.find_all('td')
-latest_data_dist = {
-    'coin_name': latest_td[0].get_text(),
-    'rate_buy': latest_td[1].get_text(),
-    'cash_buy': latest_td[2].get_text(),
-    'rate_sell': latest_td[3].get_text(),
-    'cash_sell': latest_td[4].get_text(),
-    'boc_convert': latest_td[5].get_text(),
-    'create_time': latest_td[6].get_text()
-}
-latest_convert = latest_td[5].get_text()
+    # 获取缓存中的数据
+    cached_data = redis_cache.get(CACHE_STR_KEY)
+    if cached_data != None:
+        cached_data = json.loads(redis_cache.get(CACHE_STR_KEY))
+        cached_convert = cached_data['boc_convert']
+        # print(type(cached_convert),cached_convert,"\n")
+        # print(type(latest_convert),latest_convert,"\n")
+        if(spider.arithmeticalMean(cached_convert, latest_convert)):
+            logging.debug('数据异常')
+            exit(-1)
+        if cached_convert == latest_convert:
+            logging.debug('same')
+            exit(-1)
 
-# 获取缓存中的数据
-cached_data = redis_cache.get(CACHE_STR_KEY)
-if cached_data != None:
-    cached_data = json.loads(redis_cache.get(CACHE_STR_KEY))
-    cached_convert = cached_data['boc_convert']
-    # print(type(cached_convert),cached_convert,"\n")
-    # print(type(latest_convert),latest_convert,"\n")
-    if(spider.arithmeticalMean(cached_convert, latest_convert)):
-        logging.debug('数据异常')
-        os._exit(0)
-    if cached_convert == latest_convert:
-        logging.debug('same')
-        os._exit(0)
-
-redis_cache.set(CACHE_STR_KEY, json.dumps(latest_data_dist))
-spider.writeCache(tr)
+    redis_cache.set(CACHE_STR_KEY, json.dumps(latest_data_dist))
+    spider.writeCache(tr)
