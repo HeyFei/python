@@ -9,6 +9,7 @@ from django.views.generic import (
     DeleteView
 )
 from .models import Post
+from django.http import HttpResponse
 
 
 def home(request):
@@ -16,6 +17,14 @@ def home(request):
         'posts': Post.objects.all()
     }
     return render(request, 'blog/home.html', context)
+
+
+def blog_filter(request):
+    return HttpResponse(Post.blogs_filter.all())
+
+
+def blog_count(request):
+    return HttpResponse(Post.blogs_filter.title_count('Blog'))
 
 
 def about(request):
