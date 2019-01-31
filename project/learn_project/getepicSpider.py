@@ -51,4 +51,4 @@ if __name__ == '__main__':
         getepic.choose_profile()
     else:
         print('Oops, login failed!')
-        quit()
+        exit()

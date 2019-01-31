@@ -7,6 +7,7 @@ import redis
 import json
 import sys
 import codecs
+import sqlite3
 
 logging.basicConfig(
     filename="console.log",
@@ -58,7 +59,26 @@ class Spier:
             redis_cache.delete(CACHE_LIST_KEY)
         return False
 
-    def writeCache(self, html):
+    def writeInDb(self, rate_buy, cash_buy, rate_sell, cash_sell, boc_convert, create_time):
+        conn = sqlite3.connect('emaildb.sqlite')
+        cur = conn.cursor()
+        cur.execute('DROP TABLE IF EXISTS UsdtCnyRate')
+        cur.execute('''CREATE TABLE UsdtCnyRate (rate_buy TEXT, cash_buy TEXT, rate_sell TEXT, cash_sell TEXT, boc_convert TEXT, create_time TEXT)''')
+        #cur.execute('SELECT create_time FROM UsdtCnyRate WHERE create_time = ? ', (create_time,))
+        #row = cur.fetchone()
+        # if row is None:
+        cur.execute('''
+            INSERT INTO UsdtCnyRate (rate_buy, cash_buy, rate_sell, cash_sell, boc_convert, create_time) VALUES (?, ?, ?, ?, ?, ?)''', (rate_buy, cash_buy, rate_sell, cash_sell, boc_convert, create_time))
+        conn.commit()
+        cur.close()
+
+    def saveData(self, html):
+        # with conn:
+        conn = sqlite3.connect('emaildb.sqlite')
+        cur = conn.cursor()
+        #cur.execute('DROP TABLE IF EXISTS UsdtCnyRate')
+        #cur.execute('''CREATE TABLE UsdtCnyRate (rate_buy TEXT, cash_buy TEXT, rate_sell TEXT, cash_sell TEXT, boc_convert TEXT, create_time TEXT)''')
+
         redis_cache.delete(CACHE_LIST_KEY)
         html = html[1:-1]
         for index, item in enumerate(html):
@@ -80,8 +100,15 @@ class Spier:
                 'boc_convert': boc_convert,
                 'create_time': create_time
             })
+            cur.execute('SELECT create_time FROM UsdtCnyRate WHERE create_time = ? ', (create_time,))
+            row = cur.fetchone()
+            if row is None:
+                cur.execute('''
+                INSERT INTO UsdtCnyRate (rate_buy, cash_buy, rate_sell, cash_sell, boc_convert, create_time) VALUES (?, ?, ?, ?, ?, ?)''', (rate_buy, cash_buy, rate_sell, cash_sell, boc_convert, create_time))
 
             redis_cache.lpush(CACHE_LIST_KEY, cache)
+            conn.commit()
+        cur.close()
         return True
 
     def arithmeticalMean(self, cached_convert, latest_convert):
@@ -123,18 +150,18 @@ if __name__ == '__main__':
     latest_convert = latest_td[5].get_text()
 
     # 获取缓存中的数据
-    cached_data = redis_cache.get(CACHE_STR_KEY)
-    if cached_data != None:
-        cached_data = json.loads(redis_cache.get(CACHE_STR_KEY))
-        cached_convert = cached_data['boc_convert']
-        # print(type(cached_convert),cached_convert,"\n")
-        # print(type(latest_convert),latest_convert,"\n")
-        if(spider.arithmeticalMean(cached_convert, latest_convert)):
-            logging.debug('数据异常')
-            exit(-1)
-        if cached_convert == latest_convert:
-            logging.debug('same')
-            exit(-1)
+    # cached_data = redis_cache.get(CACHE_STR_KEY)
+    # if cached_data != None:
+    #     cached_data = json.loads(redis_cache.get(CACHE_STR_KEY))
+    #     cached_convert = cached_data['boc_convert']
+    #     # print(type(cached_convert),cached_convert,"\n")
+    #     # print(type(latest_convert),latest_convert,"\n")
+    #     if(spider.arithmeticalMean(cached_convert, latest_convert)):
+    #         logging.debug('数据异常')
+    #         exit(-1)
+    #     if cached_convert == latest_convert:
+    #         logging.debug('same')
+    #         exit(-1)
 
     redis_cache.set(CACHE_STR_KEY, json.dumps(latest_data_dist))
-    spider.writeCache(tr)
+    spider.saveData(tr)
