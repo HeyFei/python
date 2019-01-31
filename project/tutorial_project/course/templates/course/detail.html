@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div class="show-top-grids">
+                <div class="col-sm-8 single-left">
+                    <div class="song" style="width: 100%;">
+                        <div class="song-info">
+                            <h3>Etiam molestie nisl eget consequat pharetra</h3>
+                        </div>
+                        <div class="video-grid">
+<!--                             <video width="620" controls poster="https://upload.wikimedia.org/wikipedia/commons/e/e8/Elephants_Dream_s5_both.jpg" >
+                              <source src="https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4" type="video/mp4">
+
+                              Your browser doesn't support HTML5 video tag.
+                            </video> -->
+
+
+                            <video
+                              id="video"
+                              width="1015"
+                              src="https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4"
+                              controls = "true"
+                              controlslist="nodownload"
+                              poster="https://upload.wikimedia.org/wikipedia/commons/e/e8/Elephants_Dream_s5_both.jpg" /*视频封面*/
+                              preload="auto"
+                              webkit-playsinline="true" /*这个属性是ios 10中设置可以让视频在小窗内播放，也就是不是全屏播放*/
+                              playsinline="true"  /*IOS微信浏览器支持小窗内播放*/
+                              x-webkit-airplay="allow"
+                              x5-video-player-type="h5"  /*启用H5播放器,是wechat安卓版特性*/
+                              x5-video-player-fullscreen="true" /*全屏设置，设置为 true 是防止横屏*/
+                              x5-video-orientation="portraint" //播放器支付的方向， landscape横屏，portraint竖屏，默认值为竖屏
+                              style="object-fit:fill">
+                                <source src="https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4" type="video/mp4">
+                                <source src="https://archive.org/download/ElephantsDream/ed_hd.ogv" type="video/ogg">
+                                <source src="https://archive.org/download/ElephantsDream/ed_hd.avi" type="video/avi">
+                            </video>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"> </div>
+                    <div class="published">
+                        <script src="jquery.min.js"></script>
+                            <script>
+                                $(document).ready(function () {
+                                    size_li = $("#myList li").size();
+                                    x=1;
+                                    $('#myList li:lt('+x+')').show();
+                                    $('#loadMore').click(function () {
+                                        x= (x+1 <= size_li) ? x+1 : size_li;
+                                        $('#myList li:lt('+x+')').show();
+                                    });
+                                    $('#showLess').click(function () {
+                                        x=(x-1<0) ? 1 : x-1;
+                                        $('#myList li').not(':lt('+x+')').hide();
+                                    });
+                                });
+                            </script>
+                            <div class="load_more">
+                                <ul id="myList">
+                                    <li>
+                                        <h4>Published on 15 June 2015</h4>
+                                        <p>Nullam fringilla sagittis tortor ut rhoncus. Nam vel ultricies erat, vel sodales leo. Maecenas pellentesque, est suscipit laoreet tincidunt, ipsum tortor vestibulum leo, ac dignissim diam velit id tellus. Morbi luctus velit quis semper egestas. Nam condimentum sem eget ex iaculis bibendum. Nam tortor felis, commodo faucibus sollicitudin ac, luctus a turpis. Donec congue pretium nisl, sed fringilla tellus tempus in.</p>
+                                    </li>
+                                    <li>
+                                        <p>Nullam fringilla sagittis tortor ut rhoncus. Nam vel ultricies erat, vel sodales leo. Maecenas pellentesque, est suscipit laoreet tincidunt, ipsum tortor vestibulum leo, ac dignissim diam velit id tellus. Morbi luctus velit quis semper egestas. Nam condimentum sem eget ex iaculis bibendum. Nam tortor felis, commodo faucibus sollicitudin ac, luctus a turpis. Donec congue pretium nisl, sed fringilla tellus tempus in.</p>
+                                        <p>Nullam fringilla sagittis tortor ut rhoncus. Nam vel ultricies erat, vel sodales leo. Maecenas pellentesque, est suscipit laoreet tincidunt, ipsum tortor vestibulum leo, ac dignissim diam velit id tellus. Morbi luctus velit quis semper egestas. Nam condimentum sem eget ex iaculis bibendum. Nam tortor felis, commodo faucibus sollicitudin ac, luctus a turpis. Donec congue pretium nisl, sed fringilla tellus tempus in.</p>
+                                        <div class="load-grids">
+                                            <div class="load-grid">
+                                                <p>Category</p>
+                                            </div>
+                                            <div class="load-grid">
+                                                <a href="movies.html">Entertainment</a>
+                                            </div>
+                                            <div class="clearfix"> </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                    </div>
+                </div>
+                <div class="col-md-4 single-right">
+                    <h3>Up Next</h3>
+                    <div class="single-grid-right">
+                        <div class="single-right-grids">
+                            <div class="col-md-4 single-right-grid-left">
+                                <a href="single.html"><img src="images/r1.jpg" alt="" /></a>
+                            </div>
+                            <div class="col-md-8 single-right-grid-right">
+                                <a href="single.html" class="title"> Nullam interdum metus</a>
+                                <p class="author"><a href="#" class="author">John Maniya</a></p>
+                                <p class="views">2,114,200 views</p>
+                            </div>
+                            <div class="clearfix"> </div>
+                        </div>
+                        <div class="single-right-grids">
+                            <div class="col-md-4 single-right-grid-left">
+                                <a href="single.html"><img src="images/r2.jpg" alt="" /></a>
+                            </div>
+                            <div class="col-md-8 single-right-grid-right">
+                                <a href="single.html" class="title"> Nullam interdum metus</a>
+                                <p class="author"><a href="#" class="author">John Maniya</a></p>
+                                <p class="views">2,114,200 views </p>
+                            </div>
+                            <div class="clearfix"> </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"> </div>
+            </div>
+            <!-- footer -->
+
+            <!-- //footer -->
+        </div>
+{% endblock%}
